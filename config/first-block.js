@@ -6,6 +6,8 @@ const ecdsa = new EC('secp256k1');
 const key = ecdsa.genKeyPair();
 const privateKey = key.getPrivate('hex');
 const publicKey = key.getPublic('hex');
+console.log(privateKey);
+console.log(publicKey);
 
 // Các giá trị mặc định ban đầu
 const totalTChain = 1000000;

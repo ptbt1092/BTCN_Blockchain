@@ -22,13 +22,17 @@ class Blockchain {
 
     createTransaction(transaction) {
         if (!transaction.fromAddress || !transaction.toAddress) {
+            console.log('Transaction must include from and to address');
             throw new Error('Transaction must include from and to address');
         }
         if (!transaction.isValid()) {
+            console.log('Cannot add invalid transaction to chain');
             throw new Error('Cannot add invalid transaction to chain');
         }
         this.pendingTransactions.push(transaction);
+        console.log('Transaction added to pending transactions:', transaction);
     }
+
 
     addValidator(validator) {
         this.validators.push(validator);
@@ -38,32 +42,37 @@ class Blockchain {
         let totalStake = this.validators.reduce((sum, validator) => sum + validator.stake, 0);
         let random = Math.floor(Math.random() * totalStake);
         let currentStake = 0;
-
+    
         for (let validator of this.validators) {
             currentStake += validator.stake;
             if (currentStake > random) {
+                console.log('Validator chosen:', validator);
                 return validator;
             }
         }
+        console.log('No validator chosen');
         return null;
-    }
-
+    }    
+    
     createNewBlock(validator) {
+        console.log('Creating new block...');
         const rewardTx = new Transaction(null, validator.address, this.miningReward);
         this.pendingTransactions.push(rewardTx);
-
+    
         let block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
         block.hash = block.calculateHash();
-
-        console.log('Block successfully created!');
+    
+        console.log('Block successfully created:', block);
         this.chain.push(block);
-
+    
         this.pendingTransactions = [];
     }
 
     stakeNewBlock() {
+        console.log('Staking new block...');
         const validator = this.chooseValidator();
         if (validator) {
+            console.log('Validator chosen:', validator);
             this.createNewBlock(validator);
         } else {
             console.log('No validators available');
@@ -103,6 +112,22 @@ class Blockchain {
             }
         }
         return true;
+    }
+
+    getTransactionOfAddress(address) {
+        let transactions = [];
+        for (const block of this.chain) {
+            for (const trans of block.transactions) {
+                if (trans.fromAddress == address || trans.toAddress == address) {
+                    transactions.push(trans);
+                }
+            }
+        }
+        return transactions.length > 0 ? transactions : null;
+    }
+
+    getListPendingTransactions() {
+        return this.pendingTransactions;
     }
 }
 
