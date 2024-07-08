@@ -1,33 +1,65 @@
 require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const exphbs = require('express-handlebars');
-const http = require('http');
-const socketIo = require('socket.io');
-const indexRouter = require('./routes/index');
+var createError     = require("http-errors");
+var express         = require("express");
+var path            = require("path");
+var cookieParser    = require("cookie-parser");
+var logger          = require("morgan");
+var middleware      = require('./helpers/middleware')
+var body            = require('body-parser');
+var app             = express();
+var server          = require("http").Server(app);
+var io              = require("socket.io")(server);
+var middleware      = require('./helpers/middleware');
+var blockChain 		= new (require("./models/blockchain"))();
+var indexRouter     = require("./routes/index");
+global.listNode = [];
+global.mining = require('./helpers/virtual/nodeMining');
+io.on("connection", function (socket) {
+	socket.emit('storeSocketId',socket.id);
+});
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "hbs");
 
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server);
+app.use(logger("dev"));
+app.use(body.urlencoded({extended:false}));
+app.use(body.json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, "public")));
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(middleware.parseUser);
+app.use("/", indexRouter);
 
-app.engine('hbs', exphbs({ extname: '.hbs' }));
-app.set('view engine', 'hbs');
-
-app.use('/', indexRouter);
-
-io.on('connection', (socket) => {
-    console.log('New client connected');
-    socket.on('disconnect', () => {
-        console.log('Client disconnected');
-    });
+// catch 404 and forward to error handler
+app.use(function (req, res, next) {
+  next(createError(404));
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
+// error 
+app.use(function (err, req, res, next) {        // default error-handler
+  if (typeof err.status === 'undefined' || err.status === 500) {
+      console.error(err.stack);
+      res.status(500).send('View error log on console.');
+    } else {
+      res.status(err.status).send(err);
+    }
+})
+
+app.use(function (err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get("env") === "development" ? err : {};
+
+  // render the error page
+  res.status(err.status || 500);
+  res.render("error");
 });
 
-module.exports = { app, io, server };
+global.io = io;
+global.blockChain = blockChain;
+module.exports = {
+  app: app,
+  io: io,
+  server: server,
+};

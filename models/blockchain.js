@@ -1,20 +1,19 @@
 const Block = require('./block');
 const Transaction = require('./transaction');
-const Validator = require('./validator');
+const configFirstBlock = require('../config/first-block');
 const EC = require('elliptic').ec;
 const ecdsa = new EC('secp256k1');
 
 class Blockchain {
     constructor() {
         this.chain = [this.createGenesisBlock()];
-        this.difficulty = 1;
         this.pendingTransactions = [];
-        this.miningReward = 1;
         this.validators = [];
     }
 
     createGenesisBlock() {
-        return new Block(Date.parse('2021-01-01'), [], '0');
+        const { privateKey, publicKey, totalTChain, timeStamp } = configFirstBlock;
+        return new Block(timeStamp, [new Transaction(null, publicKey, totalTChain)], "");
     }
 
     getLatestBlock() {
