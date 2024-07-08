@@ -1,1 +1,24 @@
-<h1>{{message}}</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain PoS</title>
+</head>
+<body>
+    <h1>Blockchain PoS</h1>
+    <pre>{{blockchain}}</pre>
+    <form action="/stake" method="POST">
+        <h2>Stake</h2>
+        <label for="privateKey">Private Key:</label>
+        <input type="text" id="privateKey" name="privateKey" required>
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" name="amount" required>
+        <button type="submit">Stake</button>
+    </form>
+    <form action="/create-block" method="POST">
+        <h2>Create Block</h2>
+        <button type="submit">Create Block</button>
+    </form>
+</body>
+</html>

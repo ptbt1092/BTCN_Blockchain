@@ -4,11 +4,12 @@ const Blockchain = require('../models/blockchain');
 const Validator = require('../models/validator');
 const EC = require('elliptic').ec;
 const ecdsa = new EC('secp256k1');
-const bodyParser = require('body-parser');
 
 const blockchain = new Blockchain();
 
-router.use(bodyParser.json());
+router.get('/', (req, res) => {
+    res.render('home', { blockchain: JSON.stringify(blockchain, null, 2) });
+});
 
 router.post('/stake', (req, res) => {
     const { privateKey, amount } = req.body;
@@ -26,10 +27,6 @@ router.post('/stake', (req, res) => {
 router.post('/create-block', (req, res) => {
     blockchain.stakeNewBlock();
     res.send('New block created');
-});
-
-router.get('/', (req, res) => {
-    res.send(blockchain);
 });
 
 module.exports = router;
