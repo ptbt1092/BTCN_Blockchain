@@ -5,6 +5,7 @@ const ecdsa = new EC("secp256k1");
 var middleware = require("../helpers/middleware");
 var wallet = new (require("../models/wallet"))();
 var Transaction = require('../models/transaction');
+var nodeMining=require("../helpers/virtual/nodeMining");
 
 router.get("/", middleware.isLogged, function (req, res, next) {
     let balance = blockChain.getBalanceOfAddress(req.user.publicKey),
@@ -100,6 +101,8 @@ router.post("/create-transaction", middleware.isLogged, (req, res) => {
         console.log('Transaction signed:', transaction);
         blockChain.createTransaction(transaction);
         console.log('Transaction created:', transaction);
+        nodeMining();
+        console.log('Mining completed');
         res.redirect('/');
     } catch (error) {
         console.log('Error creating transaction:', error);

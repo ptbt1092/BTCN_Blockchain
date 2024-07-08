@@ -48,3 +48,11 @@ socket.on('transaction', (transactions) =>{
         }
     })
 });
+
+document.addEventListener("DOMContentLoaded", function() {
+    const balanceElement = document.getElementById("total");
+    if (balanceElement) {
+        let balance = parseFloat(balanceElement.textContent);
+        balanceElement.textContent = balance.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    }
+});

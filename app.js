@@ -58,6 +58,13 @@ app.use(function (err, req, res, next) {
 
 global.io = io;
 global.blockChain = blockChain;
+
+const Validator = require('./models/validator');
+const configFirstBlock = require('./config/first-block');
+
+let validator = new Validator(configFirstBlock.publicKey, 1000);
+blockChain.addValidator(validator);
+
 module.exports = {
   app: app,
   io: io,

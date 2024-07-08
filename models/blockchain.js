@@ -9,6 +9,7 @@ class Blockchain {
         this.chain = [this.createGenesisBlock()];
         this.pendingTransactions = [];
         this.validators = [];
+        this.miningReward = 100;
     }
 
     createGenesisBlock() {
@@ -33,18 +34,20 @@ class Blockchain {
         console.log('Transaction added to pending transactions:', transaction);
     }
 
-
     addValidator(validator) {
         this.validators.push(validator);
     }
 
     chooseValidator() {
         let totalStake = this.validators.reduce((sum, validator) => sum + validator.stake, 0);
+        console.log('Total stake:', totalStake);
         let random = Math.floor(Math.random() * totalStake);
+        console.log('Random value:', random);
         let currentStake = 0;
-    
+
         for (let validator of this.validators) {
             currentStake += validator.stake;
+            console.log(`Current stake: ${currentStake}, Validator: ${validator.address}`);
             if (currentStake > random) {
                 console.log('Validator chosen:', validator);
                 return validator;
@@ -52,19 +55,19 @@ class Blockchain {
         }
         console.log('No validator chosen');
         return null;
-    }    
-    
+    }
+
     createNewBlock(validator) {
         console.log('Creating new block...');
         const rewardTx = new Transaction(null, validator.address, this.miningReward);
         this.pendingTransactions.push(rewardTx);
-    
+
         let block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
         block.hash = block.calculateHash();
-    
+
         console.log('Block successfully created:', block);
         this.chain.push(block);
-    
+
         this.pendingTransactions = [];
     }
 
@@ -79,20 +82,32 @@ class Blockchain {
         }
     }
 
+    miningPendingTransactions(miningRewardAddress) {
+        const rewardTx = new Transaction(null, miningRewardAddress, this.miningReward);
+        this.pendingTransactions.push(rewardTx);
+
+        const block = new Block(Date.now(), this.pendingTransactions, this.getLatestBlock().hash);
+        block.hash = block.calculateHash();
+        this.chain.push(block);
+
+        this.pendingTransactions = [];
+        console.log('Block successfully mined!');
+    }
+
     getBalanceOfAddress(address) {
         let balance = 0;
         for (const block of this.chain) {
             for (const trans of block.transactions) {
                 if (trans.fromAddress === address) {
-                    balance -= trans.amount;
+                    balance -= parseFloat(trans.amount);
                 }
                 if (trans.toAddress === address) {
-                    balance += trans.amount;
+                    balance += parseFloat(trans.amount);
                 }
             }
         }
         return balance;
-    }
+    }    
 
     isChainValid() {
         for (let i = 1; i < this.chain.length; i++) {
